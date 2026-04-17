@@ -1,2 +1,7 @@
 .vercel
 node_modules
+.env
+vendor
+dist
+.DS_Store
+*.log
