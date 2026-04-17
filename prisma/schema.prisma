@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  staff
+  student
+}
+
+enum UserStatus {
+  active
+  inactive
+  pending
+  locked
+  suspended
+}
+
+enum EducationLevel {
+  shs
+  college
+}
+
+enum EnrollmentStatus {
+  pending
+  approved
+  rejected
+  enrolled
+  dropped
+  graduated
+}
+
+enum PaymentStatus {
+  paid
+  partial
+  unpaid
+  overdue
+  pending
+}
+
+model User {
+  id                String       @id @default(cuid())
+  email             String       @unique
+  firstName         String
+  lastName          String
+  middleName        String?
+  role              UserRole     @default(student)
+  status            UserStatus   @default(pending)
+  avatar            String?
+  phone             String?
+  address           String?
+  branchId          String
+  emailVerified     Boolean      @default(false)
+  twoFactorEnabled  Boolean      @default(false)
+  lastLoginAt       DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relations
+  student           Student?
+  staff             Staff?
+}
+
+model Student {
+  id                       String           @id
+  user                     User             @relation(fields: [id], references: [id], onDelete: Cascade)
+  studentId                String           @unique
+  dateOfBirth              DateTime
+  gender                   String
+  nationality              String
+  civilStatus              String
+  emergencyContactName     String
+  emergencyContactPhone    String
+  emergencyContactRelation String
+  
+  educationLevel           EducationLevel
+  courseId                 String
+  yearLevel                String
+  sectionId                String?
+  academicYearId           String
+  
+  enrollmentStatus         EnrollmentStatus @default(pending)
+  enrollmentDate           DateTime?
+  paymentStatus            PaymentStatus    @default(pending)
+  totalBalance             Float            @default(0)
+  
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+}
+
+model Staff {
+  id            String   @id
+  user          User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  employeeId    String   @unique
+  department    String
+  position      String
+  hireDate      DateTime @default(now())
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Branch {
+  id              String   @id @default(cuid())
+  name            String
+  code            String   @unique
+  address         String
+  city            String
+  province        String
+  zipCode         String
+  phone           String
+  email           String
+  status          String   @default("active")
+  maxStudents     Int      @default(1000)
+  currentStudents Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

@@ -1,0 +1,15 @@
+export { DashboardPage } from './DashboardPage';
+export { StudentsPage } from './StudentsPage';
+export { PaymentsPage } from './PaymentsPage';
+export { BranchesPage } from './BranchesPage';
+export { StaffPage } from './StaffPage';
+export { GradesPage } from './GradesPage';
+export { PermitsPage } from './PermitsPage';
+export { SchedulePage } from './SchedulePage';
+export { MessagesPage } from './MessagesPage';
+export { AnnouncementsPage } from './AnnouncementsPage';
+export { AuditLogsPage } from './AuditLogsPage';
+export { AdminProfilePage } from './ProfilePage';
+export { AdminSettingsPage } from './SettingsPage';
+export { SubjectsPage } from './SubjectsPage';
+export { TeacherEvaluationsPage } from './TeacherEvaluationsPage';
