@@ -1,9 +1,14 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Seeding database...');
+
+  const defaultPassword = 'password123';
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(defaultPassword, salt);
 
   // 1. Create Branches
   const branches = await Promise.all([
@@ -42,11 +47,12 @@ async function main() {
   // 2. Create Admin
   await prisma.user.upsert({
     where: { email: 'admin@educore.ph' },
-    update: {},
+    update: { passwordHash },
     create: {
       email: 'admin@educore.ph',
       firstName: 'System',
       lastName: 'Admin',
+      passwordHash,
       role: 'admin',
       status: 'active',
       branchId: 'branch-1'
@@ -54,13 +60,14 @@ async function main() {
   });
 
   // 3. Create Student (Dave)
-  const daveUser = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'dave@gmail.com' },
-    update: {},
+    update: { passwordHash },
     create: {
       email: 'dave@gmail.com',
       firstName: 'TOMO LYSHAN',
       lastName: 'DAVE B.',
+      passwordHash,
       role: 'student',
       status: 'active',
       branchId: 'branch-1',
@@ -88,11 +95,12 @@ async function main() {
   // 4. Create Staff
   await prisma.user.upsert({
     where: { email: 'staff@educore.ph' },
-    update: {},
+    update: { passwordHash },
     create: {
       email: 'staff@educore.ph',
       firstName: 'Demo',
       lastName: 'Staff',
+      passwordHash,
       role: 'staff',
       status: 'active',
       branchId: 'branch-1',

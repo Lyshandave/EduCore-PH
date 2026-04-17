@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'node:crypto';
+import * as bcrypt from 'bcrypt';
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -63,6 +64,7 @@ export function generateResetCode() {
   return crypto.randomInt(100000, 1000000).toString();
 }
 
+// Used for OTP codes
 export function hashValue(value: string) {
   const salt = crypto.randomBytes(16).toString('hex');
   const derivedKey = crypto
@@ -89,6 +91,16 @@ export function verifyHashedValue(value: string, storedHash: string) {
     .toString('hex');
 
   return crypto.timingSafeEqual(Buffer.from(derivedKey), Buffer.from(originalHash));
+}
+
+// Used for Main Passwords
+export async function hashPassword(password: string) {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+}
+
+export async function verifyPassword(password: string, hash: string) {
+  return bcrypt.compare(password, hash);
 }
 
 export function addMinutes(date: Date, minutes: number) {

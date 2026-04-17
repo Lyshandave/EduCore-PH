@@ -1,14 +1,17 @@
 import { PrismaClient } from '@prisma/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -19,6 +22,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const { email, password, studentId } = req.body;
+
+  if (!password) {
+    return res.status(400).json({ message: 'Password is required' });
+  }
 
   try {
     // 1. Find the user based on email OR studentId
@@ -52,23 +59,53 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // 2. Verify password
+    if (!user.passwordHash) {
+      return res.status(401).json({ message: 'Account not set up. Please reset your password.' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // 3. Update last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
     // Map Prisma user to the Frontend User format
-    // We use type casting or manual check to satisfy TS
     const formattedUser = {
-      ...user,
-      studentId: user.student?.studentId || user.staff?.employeeId || null,
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      middleName: user.middleName,
       role: user.role,
+      status: user.status,
+      avatar: user.avatar || undefined,
+      branchId: user.branchId,
+      studentId: user.student?.studentId || user.staff?.employeeId || undefined,
     };
 
-    const mockTokens = {
-      accessToken: 'access-token-' + Math.random().toString(36).substring(2),
-      refreshToken: 'refresh-token-' + Math.random().toString(36).substring(2),
-      expiresIn: 3600,
+    const tokens = {
+      accessToken: jwt.sign(
+        { userId: user.id, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '1d' }
+      ),
+      refreshToken: jwt.sign(
+        { userId: user.id },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      ),
+      expiresIn: 86400,
     };
 
     return res.status(200).json({
       user: formattedUser,
-      tokens: mockTokens,
+      tokens,
     });
   } catch (error) {
     console.error('Login error:', error);

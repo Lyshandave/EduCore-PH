@@ -7,7 +7,7 @@ import {
   normalizeEmail,
   PASSWORD_MIN_LENGTH,
   prisma,
-  hashValue,
+  hashPassword,
   verifyHashedValue,
 } from './_shared';
 
@@ -92,7 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       prisma.user.update({
         where: { id: user.id },
         data: {
-          passwordHash: hashValue(newPassword),
+          passwordHash: await hashPassword(newPassword),
         },
       }),
       prisma.passwordResetCode.update({
