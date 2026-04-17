@@ -1,29 +1,39 @@
 @echo off
-echo ==========================================
-echo EduCore PH - GitHub Push Script
-echo ==========================================
+setlocal
+echo ===========================================
+echo    EduCore PH - FULL SYNC & DEPLOY
+echo ===========================================
 echo.
-echo 1. Initializing Git...
-git init
+
+:: 1. PRISMA SETUP
+echo [1/3] Syncing Database Schema...
+call npx prisma generate
+if %ERRORLEVEL% NEQ 0 (
+    echo Error during prisma generate.
+    pause
+    exit /b %ERRORLEVEL%
+)
 echo.
-echo 2. Adding files...
+
+:: 2. GITHUB PUSH
+echo [2/3] Pushing changes to GitHub...
 git add .
+set /p msg="Enter commit message (or press Enter for 'update project'): "
+if "%msg%"=="" set msg=update project
+git commit -m "%msg%"
+git push origin main
 echo.
-echo 3. Committing changes...
-git commit -m "feat: initial commit with Prisma, Railway, and Vercel setup"
+
+:: 3. VERCEL DEPLOY
+echo [3/3] Deploying to Vercel (Production)...
+call npx vercel --prod --confirm
 echo.
-echo 4. Setting branch to main...
-git branch -M main
+
+echo ===========================================
+echo    SUCCESS: Project is Live and Synced!
+echo ===========================================
 echo.
-echo 5. Connecting to GitHub...
-git remote remove origin >nul 2>&1
-git remote add origin https://github.com/Lyshandave/EduCore-PH.git
+echo GitHub:  https://github.com/Lyshandave/EduCore-PH
+echo Website: https://app-one-plum-38.vercel.app
 echo.
-echo 6. Pushing to GitHub...
-echo (If a popup appears, please login to your GitHub account)
-git push -u origin main
-echo.
-echo ==========================================
-echo Task Finished!
-echo ==========================================
 pause
