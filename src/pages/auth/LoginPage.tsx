@@ -89,13 +89,13 @@ export function LoginPage() {
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Gmail</Label>
+                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email or ID Number</Label>
                   <div className="relative group">
                     <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                     <Input
                       id="email"
-                      type="email"
-                      placeholder="yourname@gmail.com"
+                      type="text"
+                      placeholder="email@gmail.com or ID Number"
                       className="pl-10 h-11 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all dark:border-slate-700"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}

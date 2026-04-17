@@ -1,15 +1,23 @@
 import { PrismaClient } from '@prisma/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+async function hashPassword(password: string) {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Only allow in development or via a secret key if you want, but for now we'll just allow it
+  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
+    const defaultPassword = await hashPassword('password123');
+
     // 1. Create Branches
     const branches = [
       { name: 'Commonwealth', code: 'CW' },
@@ -37,9 +45,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 2. Create Admin
     await prisma.user.upsert({
       where: { email: 'admin@educore.ph' },
-      update: {},
+      update: {
+        passwordHash: defaultPassword,
+      },
       create: {
         email: 'admin@educore.ph',
+        passwordHash: defaultPassword,
         firstName: 'System',
         lastName: 'Admin',
         role: 'admin',
@@ -52,9 +63,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 3. Create Staff
     await prisma.user.upsert({
       where: { email: 'staff@educore.ph' },
-      update: {},
+      update: {
+        passwordHash: defaultPassword,
+      },
       create: {
         email: 'staff@educore.ph',
+        passwordHash: defaultPassword,
         firstName: 'Default',
         lastName: 'Staff',
         role: 'staff',
@@ -74,9 +88,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 4. Create Student
     await prisma.user.upsert({
       where: { email: 'dave@gmail.com' },
-      update: {},
+      update: {
+        passwordHash: defaultPassword,
+      },
       create: {
         email: 'dave@gmail.com',
+        passwordHash: defaultPassword,
         firstName: 'TOMO LYSHAN',
         lastName: 'DAVE B.',
         role: 'student',
@@ -102,7 +119,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     });
 
-    return res.status(200).json({ message: 'Database seeded successfully!' });
+    return res.status(200).json({ 
+      message: 'Database seeded successfully!',
+      credentials: {
+        admin: 'admin@educore.ph / password123',
+        staff: 'staff@educore.ph / password123',
+        student: 'dave@gmail.com / password123'
+      }
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Seeding failed', error: String(error) });
@@ -110,3 +134,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await prisma.$disconnect();
   }
 }
+

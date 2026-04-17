@@ -114,6 +114,68 @@ async function main() {
     }
   });
 
+  // 5. Create specific branch accounts mentioned in README
+  // Note: These use the 'staffAccount' format as the employee/student ID
+  const branchConfigs = [
+    { branch: 'branch-1', prefix: 'commonwealth', name: 'Commonwealth' },
+    { branch: 'branch-2', prefix: 'montalban', name: 'Montalban' }
+  ];
+
+  for (const config of branchConfigs) {
+    // Staff
+    await prisma.user.upsert({
+      where: { email: `${config.prefix}.staff@educore.ph` },
+      update: { passwordHash },
+      create: {
+        email: `${config.prefix}.staff@educore.ph`,
+        firstName: config.name,
+        lastName: 'Staff',
+        passwordHash,
+        role: 'staff',
+        status: 'active',
+        branchId: config.branch,
+        staff: {
+          create: {
+            employeeId: `${config.prefix}.staff`, // This allows login with this ID
+            position: 'Staff',
+            department: 'General'
+          }
+        }
+      }
+    });
+
+    // Student
+    await prisma.user.upsert({
+      where: { email: `${config.prefix}.student@educore.ph` },
+      update: { passwordHash },
+      create: {
+        email: `${config.prefix}.student@educore.ph`,
+        firstName: config.name,
+        lastName: 'Student',
+        passwordHash,
+        role: 'student',
+        status: 'active',
+        branchId: config.branch,
+        student: {
+          create: {
+            studentId: `${config.prefix}.student`, // This allows login with this ID
+            dateOfBirth: new Date('2005-05-05'),
+            gender: 'other',
+            nationality: 'Filipino',
+            civilStatus: 'single',
+            courseId: 'BSBA',
+            yearLevel: '1st',
+            academicYearId: 'ay-2024',
+            educationLevel: 'college',
+            emergencyContactName: 'Contact',
+            emergencyContactPhone: '09123456789',
+            emergencyContactRelation: 'Guardian'
+          }
+        }
+      }
+    });
+  }
+
   console.log('✅ Database seeded successfully!');
 }
 

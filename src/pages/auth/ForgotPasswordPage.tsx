@@ -71,16 +71,17 @@ export function ForgotPasswordPage() {
   const getCodeValue = () => code.join('');
 
   const validateEmail = () => {
-    const normalizedEmail = email.trim();
+    const normalizedIdentifier = email.trim();
 
-    if (!normalizedEmail) {
-      setEmailError('Please enter your email address.');
+    if (!normalizedIdentifier) {
+      setEmailError('Please enter your email or system ID.');
       return false;
     }
 
+    // If it doesn't look like an email, we assume it's an ID (which is validated on backend)
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(normalizedEmail)) {
-      setEmailError('Please enter a valid email address.');
+    if (!emailPattern.test(normalizedIdentifier) && normalizedIdentifier.length < 3) {
+      setEmailError('Please enter a valid email or system ID.');
       return false;
     }
 
@@ -386,11 +387,11 @@ export function ForgotPasswordPage() {
             {step === 'email' && (
               <form onSubmit={handleSendCode} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Email or ID Number</Label>
                   <Input
                     id="email"
-                    type="email"
-                    placeholder="yourname@gmail.com"
+                    type="text"
+                    placeholder="email@gmail.com or ID Number"
                     value={email}
                     onChange={e => {
                       setEmail(e.target.value);
