@@ -1,7 +1,7 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { prisma } from '../forgot-password/_shared';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-32-chars-long-at-least';
 

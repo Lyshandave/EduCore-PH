@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'node:crypto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
