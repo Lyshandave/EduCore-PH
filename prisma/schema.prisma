@@ -44,26 +44,28 @@ enum PaymentStatus {
 }
 
 model User {
-  id                String       @id @default(cuid())
-  email             String       @unique
+  id                String              @id @default(cuid())
+  email             String              @unique
+  passwordHash      String?
   firstName         String
   lastName          String
   middleName        String?
-  role              UserRole     @default(student)
-  status            UserStatus   @default(pending)
+  role              UserRole            @default(student)
+  status            UserStatus          @default(pending)
   avatar            String?
   phone             String?
   address           String?
   branchId          String
-  emailVerified     Boolean      @default(false)
-  twoFactorEnabled  Boolean      @default(false)
+  emailVerified     Boolean             @default(false)
+  twoFactorEnabled  Boolean             @default(false)
   lastLoginAt       DateTime?
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
   // Relations
   student           Student?
   staff             Staff?
+  passwordResetCodes PasswordResetCode[]
 }
 
 model Student {
@@ -141,4 +143,23 @@ model Payment {
   verifiedBy      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model PasswordResetCode {
+  id           String   @id @default(cuid())
+  userId       String
+  email        String
+  codeHash     String
+  expiresAt    DateTime
+  verifiedAt   DateTime?
+  usedAt       DateTime?
+  attemptCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([userId])
+  @@index([expiresAt])
 }
