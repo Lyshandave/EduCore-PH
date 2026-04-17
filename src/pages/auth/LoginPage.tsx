@@ -181,30 +181,6 @@ export function LoginPage() {
                 Create Student Account
               </Button>
             </Link>
-            
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center border-b pb-2">Demo Access Center</p>
-              <div className="grid grid-cols-3 gap-2 text-[10px]">
-                <div className="font-bold text-slate-500">BRANCH</div>
-                <div className="font-bold text-slate-500">STAFF</div>
-                <div className="font-bold text-slate-500">STUDENT</div>
-                
-                <div className="text-blue-600 font-bold">Commonwealth</div>
-                <div className="text-slate-600 truncate">commonwealth.staff</div>
-                <div className="text-slate-600 truncate">commonwealth.student</div>
-                
-                <div className="text-indigo-600 font-bold">Montalban</div>
-                <div className="text-slate-600 truncate">montalban.staff</div>
-                <div className="text-slate-600 truncate">montalban.student</div>
-                
-                <div className="text-violet-600 font-bold">Taytay</div>
-                <div className="text-slate-600 truncate">taytay.staff</div>
-                <div className="text-slate-600 truncate">taytay.student</div>
-              </div>
-              <p className="text-[9px] text-slate-400 text-center italic mt-2">
-                All passwords: <strong>password123</strong> | Admin: <strong>admin@educore.ph</strong>
-              </p>
-            </div>
           </CardFooter>
         </Card>
 

@@ -89,7 +89,7 @@ export function StudentsPage() {
     studentId: '',
     courseId: 'BSIT',
     yearLevel: '1st',
-    branchId: 'Main Campus'
+    branchId: 'branch-1'
   });
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export function StudentsPage() {
       await createStudent({ ...newStudentData, status: 'active' });
       addToast({ type: 'success', title: 'Student Added', message: 'The student has been successfully added.' });
       setShowAddDialog(false);
-      setNewStudentData({ firstName: '', lastName: '', email: '', studentId: '', courseId: 'BSIT', yearLevel: '1st', branchId: 'Main Campus' });
+      setNewStudentData({ firstName: '', lastName: '', email: '', studentId: '', courseId: 'BSIT', yearLevel: '1st', branchId: 'branch-1' });
     } catch (err) {
       addToast({ type: 'error', title: 'Error', message: 'Failed to add student.' });
     }
@@ -264,8 +264,8 @@ export function StudentsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Student ID</Label><Input value={newStudentData.studentId} onChange={e => setNewStudentData({...newStudentData, studentId: e.target.value})} required /></div>
               <div className="space-y-2"><Label>Branch</Label><Select value={newStudentData.branchId} onValueChange={v => setNewStudentData({...newStudentData, branchId: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
-                <SelectItem value="Commonwealth">AICS Commonwealth</SelectItem>
-                <SelectItem value="Montalban">AICS Montalban</SelectItem>
+                <SelectItem value="branch-1">AICS Commonwealth</SelectItem>
+                <SelectItem value="branch-2">AICS Montalban</SelectItem>
                 <SelectItem value="Taytay">AICS Taytay</SelectItem>
                 <SelectItem value="Tanay">AICS Tanay</SelectItem>
                 <SelectItem value="Meycauayan">AICS Meycauayan</SelectItem>

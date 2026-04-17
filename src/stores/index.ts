@@ -9,3 +9,4 @@ export { usePaymentStore } from './paymentStore';
 export { useDashboardStore } from './dashboardStore';
 export { useNotificationStore } from './notificationStore';
 export { useMessageStore } from './messageStore';
+export { useStaffStore } from './staffStore';

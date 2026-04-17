@@ -122,29 +122,51 @@ export const useStudentStore = create<StudentState>()(
 
       bulkApproveStudents: async (ids) => {
         set({ isBulkLoading: true });
-        await new Promise(resolve => setTimeout(resolve, 800));
-        set((state) => ({
-          students: state.students.map(s => ids.includes(s.id) ? { 
-            ...s, 
-            status: 'active' as UserStatus, 
-            enrollmentStatus: 'approved' 
-          } : s),
-          isBulkLoading: false
-        }));
-        return { success: true, processed: ids.length, succeeded: ids.length, failed: 0, errors: [] };
+        try {
+          const response = await axios.post('/api/students/bulk-action', {
+            ids,
+            action: 'approve'
+          });
+          
+          if (response.data.success) {
+            set((state) => ({
+              students: state.students.map(s => ids.includes(s.id) ? { 
+                ...s, 
+                status: 'active' as UserStatus, 
+                enrollmentStatus: 'approved' 
+              } : s),
+              isBulkLoading: false
+            }));
+          }
+          return response.data;
+        } catch (error) {
+          set({ error: 'Failed to approve students', isBulkLoading: false });
+          return { success: false, processed: ids.length, succeeded: 0, failed: ids.length, errors: [String(error)] };
+        }
       },
 
       bulkRejectStudents: async (ids) => {
         set({ isBulkLoading: true });
-        await new Promise(resolve => setTimeout(resolve, 800));
-        set((state) => ({
-          students: state.students.map(s => ids.includes(s.id) ? { 
-            ...s, 
-            enrollmentStatus: 'rejected'
-          } : s),
-          isBulkLoading: false
-        }));
-        return { success: true, processed: ids.length, succeeded: ids.length, failed: 0, errors: [] };
+        try {
+          const response = await axios.post('/api/students/bulk-action', {
+            ids,
+            action: 'reject'
+          });
+          
+          if (response.data.success) {
+            set((state) => ({
+              students: state.students.map(s => ids.includes(s.id) ? { 
+                ...s, 
+                enrollmentStatus: 'rejected'
+              } : s),
+              isBulkLoading: false
+            }));
+          }
+          return response.data;
+        } catch (error) {
+          set({ error: 'Failed to reject students', isBulkLoading: false });
+          return { success: false, processed: ids.length, succeeded: 0, failed: ids.length, errors: [String(error)] };
+        }
       },
 
       bulkEnrollStudents: async () => {

@@ -13,3 +13,4 @@ export { AdminProfilePage } from './ProfilePage';
 export { AdminSettingsPage } from './SettingsPage';
 export { SubjectsPage } from './SubjectsPage';
 export { TeacherEvaluationsPage } from './TeacherEvaluationsPage';
+export { EnrollmentsPage } from './EnrollmentsPage';

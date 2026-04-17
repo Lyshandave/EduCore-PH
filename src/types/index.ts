@@ -202,6 +202,7 @@ export interface StudentDocument {
 // STAFF INTERFACE
 // ============================================
 export interface Staff extends User {
+  name: string;
   employeeId: string;
   dateOfBirth: string;
   gender: 'male' | 'female' | 'other';

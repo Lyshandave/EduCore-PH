@@ -86,7 +86,7 @@ function App() {
           {/* Real routes for admin pages */}
           <Route path="branches" element={<AdminPages.BranchesPage />} />
           <Route path="staff" element={<AdminPages.StaffPage />} />
-          <Route path="enrollments" element={<div className="p-8 text-center text-slate-500">Enrollments - Coming Soon</div>} />
+          <Route path="enrollments" element={<AdminPages.EnrollmentsPage />} />
           <Route path="grades" element={<AdminPages.GradesPage />} />
           <Route path="permits" element={<AdminPages.PermitsPage />} />
           <Route path="schedule" element={<AdminPages.SchedulePage />} />

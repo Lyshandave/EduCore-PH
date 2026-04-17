@@ -12,20 +12,20 @@ A modern, functional, and responsive School Management System built with React, 
 
 ---
 
-## 🔑 Demo Access Center
+## 🔑 Testing Credentials
 
-Use the following credentials to test the system across different branches and roles. **Universal Password: `password123`**
+Use the following credentials to test the system. **Universal Password: `password123`**
 
 ### 🏢 Admin Access
-- **Super Admin**: `admin@educore.ph` (Full control over all branches)
+- **Super Admin**: `admin@educore.ph`
 
-### 👥 Staff & Student Accounts (Branch Specific)
+### 👥 Branch Demo Accounts
 
 | Branch | Staff Account | Student Account |
 | :--- | :--- | :--- |
-| **Commonwealth (HQ)** | `commonwealth.staff@educore.ph` | `commonwealth.student@gmail.com` |
-| **Montalban** | `montalban.staff@educore.ph` | `montalban.student@gmail.com` |
-| **Taytay** | `taytay.staff@educore.ph` | `taytay.student@gmail.com` |
+| **Commonwealth** | `commonwealth.staff` | `commonwealth.student` |
+| **Montalban** | `montalban.staff` | `montalban.student` |
+| **Taytay** | `taytay.staff` | `taytay.student` |
 | **Global Demo** | `staff@educore.ph` | `dave@gmail.com` |
 
 > **Pro Tip**: Staff accounts automatically filter data to show only students from their respective branch.

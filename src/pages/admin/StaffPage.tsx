@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -40,56 +40,61 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
-import { useUIStore } from '@/stores';
-
-const initialStaff = [
-  { id: 'STF-001', name: 'Maria Santos', role: 'Staff (Branch Admin)', branch: 'Main Campus', status: 'Active', email: 'm.santos@educore.ph', lastLogin: '2 mins ago' },
-  { id: 'STF-002', name: 'Juan Dela Cruz', role: 'Staff (Registrar)', branch: 'Main Campus', status: 'Active', email: 'j.delacruz@educore.ph', lastLogin: '1 hour ago' },
-  { id: 'STF-003', name: 'Ana Reyes', role: 'Staff (Staff)', branch: 'North Branch', status: 'Inactive', email: 'a.reyes@educore.ph', lastLogin: '5 days ago' },
-];
+import { useUIStore, useStaffStore } from '@/stores';
 
 export function StaffPage() {
   const { addToast } = useUIStore();
-  const [staffList, setStaffList] = useState(initialStaff);
+  const { staff: staffList, isLoading, fetchStaff, createStaff } = useStaffStore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [branchFilter] = useState('all');
+  const [branchFilter, setBranchFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [newStaff, setNewStaff] = useState({
     name: '',
     email: '',
     role: 'Registrar',
-    branch: 'Main Campus'
+    branchId: 'branch-1'
   });
+
+  useEffect(() => {
+    fetchStaff();
+  }, []);
 
   const handleAddStaff = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const staff = {
-      id: `STF-00${staffList.length + 1}`,
-      name: newStaff.name,
-      role: newStaff.role,
-      branch: newStaff.branch,
-      status: 'Active',
-      email: newStaff.email,
-      lastLogin: 'Never'
-    };
-
-    setStaffList([staff, ...staffList]);
-    setIsAddOpen(false);
-    setIsSubmitting(false);
-    setNewStaff({ name: '', email: '', role: 'Registrar', branch: 'Main Campus' });
-    addToast({ type: 'success', title: 'Staff Added', message: `${staff.name} has been registered as ${staff.role}.` });
+    try {
+      await createStaff({
+        ...newStaff,
+        position: newStaff.role,
+      });
+      setIsAddOpen(false);
+      setNewStaff({ name: '', email: '', role: 'Registrar', branchId: 'branch-1' });
+      addToast({ type: 'success', title: 'Staff Added', message: 'The new staff member has been registered.' });
+    } catch (err) {
+      addToast({ type: 'error', title: 'Error', message: 'Failed to add staff.' });
+    }
   };
 
   const filteredStaff = staffList.filter(staff => {
-    const matchesSearch = staff.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          staff.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesBranch = branchFilter === 'all' || staff.branch.toLowerCase().includes(branchFilter.toLowerCase());
-    return matchesSearch && matchesBranch;
+    const fullName = staff.firstName ? `${staff.firstName} ${staff.lastName}` : (staff.name || '');
+    const matchesSearch = fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          staff.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (staff.employeeId || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Check both branch name and branchId
+    const branchName = staff.branchId === 'branch-1' ? 'Commonwealth' : 
+                       staff.branchId === 'branch-2' ? 'Montalban' : 
+                       (staff.branchId || '');
+                       
+    const matchesBranch = branchFilter === 'all' || 
+                          branchName.toLowerCase().includes(branchFilter.toLowerCase()) ||
+                          (staff.branchId || '').toLowerCase().includes(branchFilter.toLowerCase());
+                          
+    const matchesStatus = statusFilter === 'all' || 
+                          (staff.status || '').toLowerCase() === statusFilter.toLowerCase();
+                          
+    return matchesSearch && matchesBranch && matchesStatus;
   });
 
   return (
@@ -109,6 +114,24 @@ export function StaffPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input placeholder="Search staff..." className="pl-9" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
+        <div className="flex gap-2">
+          <Select value={branchFilter} onValueChange={setBranchFilter}>
+            <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Branches" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Branches</SelectItem>
+              <SelectItem value="branch-1">Commonwealth</SelectItem>
+              <SelectItem value="branch-2">Montalban</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[150px]"><SelectValue placeholder="All Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
@@ -123,17 +146,43 @@ export function StaffPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredStaff.map((staff) => (
+            {isLoading ? (
+              <TableRow><TableCell colSpan={5} className="text-center py-12"><Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" /><p className="text-sm text-slate-500 mt-2">Loading staff records...</p></TableCell></TableRow>
+            ) : filteredStaff.length === 0 ? (
+              <TableRow><TableCell colSpan={5} className="text-center py-12 text-slate-500">No staff members found.</TableCell></TableRow>
+            ) : (
+              filteredStaff.map((staff) => (
               <TableRow key={staff.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8"><AvatarFallback>{staff.name[0]}</AvatarFallback></Avatar>
-                    <div><p className="font-medium text-sm">{staff.name}</p><p className="text-[10px] text-slate-500">{staff.id}</p></div>
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>{(staff.firstName?.[0] || staff.name?.[0]) || 'S'}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium text-sm">
+                        {staff.firstName ? `${staff.firstName} ${staff.lastName}` : (staff.name || 'Unknown')}
+                      </p>
+                      <p className="text-[10px] text-slate-500">{staff.employeeId || staff.id}</p>
+                    </div>
                   </div>
                 </TableCell>
-                <TableCell><Badge variant="outline">{staff.role}</Badge></TableCell>
-                <TableCell><div className="flex items-center gap-1 text-xs"><Building2 size={12}/>{staff.branch}</div></TableCell>
-                <TableCell><Badge variant="secondary" className={staff.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100'}>{staff.status}</Badge></TableCell>
+                <TableCell><Badge variant="outline">{staff.position || staff.role}</Badge></TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1 text-xs">
+                    <Building2 size={12}/>
+                    {staff.branchId === 'branch-1' ? 'AICS Commonwealth' : 
+                     staff.branchId === 'branch-2' ? 'AICS Montalban' : 
+                     (staff.branchId || 'Main Campus')}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge 
+                    variant="secondary" 
+                    className={staff.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100'}
+                  >
+                    {staff.status}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreVertical size={16}/></Button></DropdownMenuTrigger>
@@ -144,8 +193,7 @@ export function StaffPage() {
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
+              )))}          </TableBody>
         </Table>
       </div>
 
@@ -169,11 +217,11 @@ export function StaffPage() {
               </div>
               <div className="space-y-1">
                 <Label>Branch</Label>
-                <Select value={newStaff.branch} onValueChange={v => setNewStaff({...newStaff, branch: v})}>
+                <Select value={newStaff.branchId} onValueChange={v => setNewStaff({...newStaff, branchId: v})}>
                   <SelectTrigger><SelectValue/></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Commonwealth">AICS Commonwealth</SelectItem>
-                    <SelectItem value="Montalban">AICS Montalban</SelectItem>
+                    <SelectItem value="branch-1">AICS Commonwealth</SelectItem>
+                    <SelectItem value="branch-2">AICS Montalban</SelectItem>
                     <SelectItem value="Taytay">AICS Taytay</SelectItem>
                     <SelectItem value="Tanay">AICS Tanay</SelectItem>
                     <SelectItem value="Meycauayan">AICS Meycauayan</SelectItem>
@@ -187,7 +235,7 @@ export function StaffPage() {
                 </Select>
               </div>
             </div>
-            <DialogFooter><Button type="submit" disabled={isSubmitting}>{isSubmitting ? <Loader2 className="animate-spin" /> : 'Create Staff'}</Button></DialogFooter>
+            <DialogFooter><Button type="submit" disabled={isLoading}>{isLoading ? <Loader2 className="animate-spin" /> : 'Create Staff'}</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
